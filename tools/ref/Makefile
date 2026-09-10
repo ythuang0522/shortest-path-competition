@@ -18,4 +18,18 @@ refsolve: refsolve.cpp
 	fi
 
 clean:
+	rm -f $(SOLVERS)
 	rm -f refsolve
+
+# --- reference solvers ------------------------------------------------------
+# These stand in for student submissions, so they follow the competition
+# rules: no OpenMP, C++17, standard library only. Used by
+# tools/discriminate.py to check that the dataset actually separates
+# different levels of solution.
+SOLVERS := solvers/bidij solvers/alt solvers/ch
+
+.PHONY: solvers
+solvers: $(SOLVERS)
+
+solvers/%: solvers/%.cpp solvers/common.hpp
+	$(CXX) $(CXXFLAGS) -o $@ $<
