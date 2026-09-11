@@ -80,7 +80,6 @@ is scored.
 Your `solver.cpp` must:
 
 1. Be a modified copy of `dijkstra_foundation.cpp`, not a rewrite from scratch.
-   You submit the diff.
 2. Keep the command line: `./solver <graph> <queries> <output>`.
 3. Produce exactly the foundation's output on every instance (`-1` for
    unreachable).
@@ -93,16 +92,15 @@ Do **not** edit `dijkstra_foundation.cpp`. `grade.py` compiles it itself to
 measure the baseline; editing it would change your own baseline.
 
 `grade.py` enforces rules 3, 5 and 6 automatically. Rules 1, 4 and 7 are
-checked by hand on submission.
+checked by reading your `solver.cpp`.
 
 ## What to submit
 
-- `solver.cpp` (plus any headers you added)
-- `Makefile` (if you changed it)
-- `result.json` from step 4
-- `diff_from_foundation.patch`: `diff -u dijkstra_foundation.cpp solver.cpp > diff_from_foundation.patch`
-- `report.pdf`: one page on what you did and why it helped
-- `machine.txt`: your CPU model and RAM
+- `solver.cpp` (plus any headers you added, and the `Makefile` if you changed it)
+- `result.json`, written by step 4
+
+Nothing else. `result.json` already records your times, the baseline times,
+and the score.
 
 ## How the score works
 

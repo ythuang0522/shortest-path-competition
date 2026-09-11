@@ -297,5 +297,5 @@
   <!-- ========== footer ========== -->
   <rect x="0" y="966" width="1920" height="114" fill="#14324D"/>
   <text class="s" x="56" y="1006" font-size="18" fill="#FFFFFF">Hidden test set — you get the full generator (<tspan class="m" font-size="17" fill="#BFD6E6">tools/gen</tspan>). Grading runs the same code with the same parameters and a seed you do not have: tune to the structure, not to the bytes.</text>
-  <text class="s" x="56" y="1042" font-size="17" fill="#A9C2D6">Submit — <tspan class="m" font-size="16">solver.cpp · Makefile · result.json · diff_from_foundation.patch · report.pdf · machine.txt</tspan></text>
+  <text class="s" x="56" y="1042" font-size="17" fill="#A9C2D6">Submit — <tspan class="m" font-size="16">solver.cpp</tspan> and the <tspan class="m" font-size="16">result.json</tspan> that grade.py writes. Nothing else.</text>
 </svg>

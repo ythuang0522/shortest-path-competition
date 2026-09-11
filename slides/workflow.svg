@@ -156,10 +156,7 @@
   <text class="m" x="876" y="544" text-anchor="middle" font-size="12.5" fill="#C2410C" font-weight="700">solver.cpp</text>
   <rect x="944" y="526" width="112" height="26" rx="5" fill="#F2F1ED" stroke="#DCDBD6"/>
   <text class="m" x="1000" y="544" text-anchor="middle" font-size="12.5" fill="#14324D">result.json</text>
-  <rect x="1068" y="526" width="190" height="26" rx="5" fill="#F2F1ED" stroke="#DCDBD6"/>
-  <text class="m" x="1163" y="544" text-anchor="middle" font-size="12.5" fill="#14324D">diff_from_foundation.patch</text>
-  <rect x="1270" y="526" width="86" height="26" rx="5" fill="#F2F1ED" stroke="#DCDBD6"/>
-  <text class="m" x="1313" y="544" text-anchor="middle" font-size="12.5" fill="#14324D">report.pdf</text>
-  <text class="s sm" x="746" y="578">plus <tspan class="m">Makefile</tspan> if you changed it, and <tspan class="m">machine.txt</tspan> with your CPU and RAM.</text>
+  <text class="s sm" x="1070" y="544">— that's all. Plus <tspan class="m">Makefile</tspan> only if you changed it.</text>
+  <text class="s sm" x="746" y="578"><tspan class="m">result.json</tspan> already records your times, the baseline times and the score.</text>
   <text class="s sm" x="746" y="598">The small <tspan class="m">*_dev</tspan> set (already in the repo) is for quick checks; only <tspan class="m">instances.txt</tspan> is scored.</text>
 </svg>
