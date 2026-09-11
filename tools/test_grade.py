@@ -9,9 +9,7 @@ back quietly:
   1. foundation-as-solver scores ~1.0 on every instance -- which is also an
      end-to-end check that baseline extrapolation agrees with reality.
   2. a wrong answer scores the floor AND still counts towards the geometric
-     mean.  In v1 it did neither: `speedup = 0.0` was computed and never
-     appended, and geomean() dropped non-positive values, so failing your
-     weakest instance raised your score.
+     mean, so failing your weakest instance can never raise your score.
   3. the timeout, the 4 GB cap and the single-thread rule are enforced rather
      than merely written down, and one bad instance does not abort the run.
   4. `--baseline-probe` agrees with `--baseline-full`.
@@ -98,9 +96,8 @@ def main():
         inst = res["instances"][0]
         check("flagged WRONG", inst["note"] == "WRONG", f"note={inst['note']}")
         check("scores the floor", inst["speedup"] == 0.1, f"speedup={inst['speedup']}")
-        # the v1 bug: a failed instance vanished from the mean instead of
-        # dragging it down, so failing your worst instance improved your score
-        check("counts towards the geomean (v1 dropped it)",
+        # a failed instance must drag the mean down, not vanish from it
+        check("counts towards the geomean",
               abs(res["overall_geomean"] - 0.1) < 1e-9,
               f"overall={res['overall_geomean']}")
 

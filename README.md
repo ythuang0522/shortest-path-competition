@@ -1,239 +1,230 @@
 # Shortest-Path Algorithms Competition
 
-Your job: take the provided Dijkstra implementation and make it **faster** on
-the released graph instances, without changing its output.
+You are given a working Dijkstra implementation, `dijkstra_foundation.cpp`.
+Copy it to `solver.cpp` and make it faster. Same input, same output, less time.
 
-This README contains everything you need.
+**Your entire job is one C++ file.** Everything else — downloading the data,
+timing, checking answers, computing the score — is done for you by one Python
+script, `grade.py`. You hand in `solver.cpp` and the `result.json` it writes.
 
-## What's in this repo
+## How the pieces fit
 
-```
-dijkstra_foundation.cpp   the baseline you must build on
-Makefile                  builds  `foundation`  and  `solver`
-grade.py                  scoring script (correctness + speedup)
-instances.txt             the instance list grade.py reads
-samples/
-    tiny.graph            6-node hand-built graph
-    tiny.queries          7 queries
-    tiny.expected         expected output (for sanity)
-instances/
-    *_dev.{graph,queries,answers}    dev tier, committed here
-    *_large.*                        download, THIS IS THE SCORED SET
-checksums/                SHA-256 of every distributed file
-scripts/download_large.sh fetch the large tier
-tools/gen/                the dataset generator (see "Practice instances")
-tools/ref/                reference solver used to produce the answer keys
-```
+![Your solver.cpp and the test data go into grade.py; a score table and result.json come out](slides/workflow.svg)
 
-## Tiers
+You only touch `solver.cpp`. One command produces the table on the right, and
+the `Overall geomean` line is your score.
 
-| Tier | Where | Scored | Purpose |
-|---|---|:--:|---|
-| `_dev` | committed here | no | correctness suite and iteration; the foundation runs it in about 1.5 min |
-| `_large` | `scripts/download_large.sh` | **yes** | the graded run; the foundation needs about 1.7 h CPU for the whole tier, under 30 min per instance |
+## Quick start
 
 ```sh
-scripts/download_large.sh
+make foundation                        # 1. build the baseline
+scripts/download_large.sh              # 2. fetch the scored data (185 MB, once)
+cp dijkstra_foundation.cpp solver.cpp  # 3. this file is your assignment
+make solver                            #    ...edit solver.cpp, rebuild...
+python3 grade.py --solver ./solver --instances instances.txt --json result.json   # 4. score
 ```
 
-Timings are from an Apple-silicon laptop; budget roughly double on an older
-machine. Every instance stays well inside the 3600 s per-run limit, so an
-unmodified foundation submitted as `solver` completes, it just scores 1.0x.
+Step 4 prints a table and writes `result.json`. Before you change anything,
+`solver.cpp` *is* the foundation, so every speedup is about 1.0. This is a real
+run on the dev set (see below), times in seconds:
 
-Downloads are gzipped and checksum-verified on arrival, so a truncated
-download fails loudly instead of turning into a mysterious wrong answer.
+```
+category instance                        T_base   T_solver   peakRSS    speedup  note
+GLOBAL   road2d_dev.graph                 6.361      6.145        9M      1.035  ok
+GLOBAL   lattice3d_dev.graph             37.616     38.482       11M      0.977  ok
+LOCAL    local2d_dev.graph                2.824      2.793        5M      1.011  ok
+GLOBAL   scalefree_dev.graph             19.065     19.278        5M      0.989  ok
+GLOBAL   hugeq_dev.graph                 24.718     24.188        9M      1.022  ok
+LOCAL    wide64_dev.graph                 6.181      6.073        5M      1.018  ok
 
-## 1. Build and sanity-check the foundation
+Overall                 geomean = 1.009  (n=6)
+```
+
+As you improve `solver.cpp` the `speedup` column grows. An illustrative result
+for a solver that is much faster on four instances, modestly faster on one, and
+wrong on one:
+
+```
+category instance                        T_base   T_solver   peakRSS    speedup  note
+GLOBAL   road2d_large.graph             733.1        6.9      210M    106.245  ok
+GLOBAL   lattice3d_large.graph         1034.2      412.6      180M      2.506  ok
+LOCAL    local2d_large.graph            870.5       14.2      160M     61.303  ok
+GLOBAL   scalefree_large.graph          918.0       10.1      190M     90.891  ok
+GLOBAL   hugeq_large.graph             1550.3        8.4       40M    184.560  ok
+LOCAL    wide64_large.graph                 -          -      900M      0.100  WRONG
+
+Overall                 geomean = 17.361  (n=6)
+```
+
+`note=ok` means your answers were correct. Anything else means that instance
+scored 0.1 — the `WRONG` line above cost this solver most of its score (without
+it the mean would be about 49). Correctness first, then speed.
+
+That is the whole workflow. Repeat step 4 as you improve `solver.cpp`.
+
+### Iterating quickly
+
+The scored run takes a while (the unmodified foundation needs about 1.7 h of
+CPU for all six instances). While you work, use the small dev set, which is
+already in the repo and takes the foundation about 1.5 minutes:
 
 ```sh
-make foundation
-./foundation samples/tiny.graph samples/tiny.queries /tmp/out.txt
-diff /tmp/out.txt samples/tiny.expected   # must be empty
+python3 grade.py --solver ./solver --instances instances_dev.txt
 ```
 
-If `diff` prints anything, something is wrong with your environment — stop and ask.
+The dev set is for checking correctness and rough speed. Only `instances.txt`
+is scored.
 
-Then check it against every committed instance's answer key:
+## The rules
 
-```sh
-make check-data
-```
+Your `solver.cpp` must:
 
-That runs the unmodified foundation over each `_dev` instance and compares it
-with the shipped `.answers`. The keys were produced by a completely separate
-implementation (`tools/ref/refsolve`), so agreement is a real cross-check
-rather than a tautology.
+1. Be a modified copy of `dijkstra_foundation.cpp`, not a rewrite from scratch.
+   You submit the diff.
+2. Keep the command line: `./solver <graph> <queries> <output>`.
+3. Produce exactly the foundation's output on every instance (`-1` for
+   unreachable).
+4. Be C++17 using only the standard library.
+5. Be single-threaded.
+6. Stay under 4 GB of memory and 3600 s per instance.
+7. Not contain precomputed answers.
 
-## 2. File formats
+Do **not** edit `dijkstra_foundation.cpp`. `grade.py` compiles it itself to
+measure the baseline; editing it would change your own baseline.
 
-0-based vertex indices throughout.
-
-```
-<graph_file>
-  V E FLAGS
-  u_1 v_1 w_1
-  ...
-  u_E v_E w_E
-  [ if FLAGS bit 0 is set:
-    x_0 y_0
-    ...
-    x_{V-1} y_{V-1} ]
-
-<query_file>
-  Q
-  s_1 t_1
-  ...
-  s_Q t_Q
-
-<output_file>
-  d_1
-  ...
-  d_Q          (-1 if t_i is not reachable from s_i)
-```
-
-`FLAGS` is a bitmask:
-
-| bit | value | meaning |
-|---|---|---|
-| 0 | 1 | the coordinate block is present |
-| 1 | 2 | **the edge list is directed**: `u v w` is the arc `u -> v` only |
-
-When bit 1 is clear the graph is undirected and each line contributes both
-directions. A `FLAGS` of `0` or `1` therefore means what `HAS_COORDS` used to.
-
-Coordinates are **integers**. Weights are positive and fit in `int32`;
-**distances do not necessarily fit in 32 bits** — check each instance's
-`.meta.json` for `resolve.fits_uint32` and `resolve.max_finite_distance`.
-
-Each instance ships a `<name>.meta.json` recording V, E, flags, component
-count, weight range, query mix, unreachable count and maximum distance. It is
-there so you can reason about the data instead of guessing at it.
-
-## 3. Fork the foundation into `solver.cpp`
-
-```sh
-cp dijkstra_foundation.cpp solver.cpp
-make solver
-```
-
-Now improve `solver.cpp`. Your submission must:
-
-- Keep the same command-line interface: `./solver <graph> <queries> <output>`.
-- Read the same file formats as the foundation.
-- Produce output identical to the foundation's on every instance
-  (modulo trailing whitespace).
-- Be a derivative of the foundation, not a rewrite. Submit a
-  `diff_from_foundation.patch`.
-
-## 4. Score yourself
-
-```sh
-python3 grade.py --solver ./solver --instances instances.txt --json result.json
-```
-
-Point `--instances` at a file with one `<category> <graph> <queries>` line per
-instance; `instances.txt` ships wired to the dev tier, and you extend it with
-the large instances once you have downloaded them. Categories are
-`GLOBAL` (long-range queries, throughput-bound) or `LOCAL` (short-range
-queries, where per-query fixed costs dominate).
-
-`note=WRONG` means correctness failed — fix that first; speed is worthless if
-the answers are wrong.
-
-### How the score is computed
-
-For each instance, `speedup = T_base / T_solver`, then geometric means per
-category, per track and overall. Four things about that are worth knowing:
-
-**The score is not capped.** If your solver is 400x faster, you score 400.
-
-**`T_base` is estimated, not measured in full.** The scored instances carry up
-to 600,000 queries; running the unmodified foundation over all of them takes
-about 1.7 h. So `grade.py` times the foundation on two short prefixes of the query
-file and fits `T(q) = a + b·q` — `a` is parsing, `b` is per-query cost.
-
-Measured over 5 repetitions on the dev tier, the systematic error of a
-2,000-query probe is +3.2% on `lattice3d_dev` and −0.1% on `local2d_dev`.
-That part is a per-instance constant — the same queries for everyone — so it
-scales every submission on that instance equally and cancels out of the
-ranking. What does not cancel is machine noise, measured at 3.9% run-to-run on
-a 75-second instance and 7.2% on a 5-second one. Use `--baseline-full` on a dev
-instance to see the extrapolation checked against a real full run.
-
-That last pair of numbers is also why the dev tier is not scored: a few-second
-run cannot be timed tightly enough to rank anyone.
-
-**Correctness is checked against the shipped `<name>.answers` key**, not
-against your copy of the foundation.
-
-**`grade.py` compiles the foundation itself**, from `dijkstra_foundation.cpp`
-with pinned `-O2 -std=c++17`, so `T_base` does not depend on your build
-settings. Your own `Makefile` governs only your solver.
-
-### Limits are enforced, not just stated
-
-`grade.py` applies them and scores the instance at the floor if you exceed one:
-
-| Limit | How it is enforced |
-|---|---|
-| 4 GB memory | `RLIMIT_AS` on the child, plus peak RSS from `getrusage` (macOS cannot lower `RLIMIT_AS`, so only the RSS check applies there) |
-| single-threaded | CPU time may not exceed 1.4x wall time |
-| time limit | `--timeout`, default 3600 s per run |
-| determinism | the three timing repeats must produce identical output |
-
-## 5. Practice instances
-
-`tools/gen/` is the real generator, and you have it. Instances are a pure
-function of `(seed, salt, parameters)`, so you can produce as many fresh ones
-as you like:
-
-```sh
-make -C tools/ref                                  # build the reference solver
-
-python3 -m tools.gen --manifest tools/manifest/public.json \
-                     --instance road2d_dev --seed 12345 --salt mine --out mydata
-tools/ref/refsolve plan mydata/road2d_dev.graph mydata/road2d_dev.qplan \
-                        mydata/road2d_dev.queries mydata/road2d_dev.answers
-```
-
-or in one step, with the same validation the released instances went through:
-
-```sh
-python3 tools/pipeline.py --manifest tools/manifest/public.json \
-                          --instance road2d_dev --out mydata
-```
-
-**The graded run uses instances generated from the same code and the same
-parameters with a seed you do not have.** Tuning to the released bytes will not
-transfer; tuning to the *structure* will.
-
-## Make targets
-
-| Target | What it does |
-|---|---|
-| `make foundation` | build the baseline |
-| `make solver` | build your `solver.cpp` |
-| `make check-data` | verify every committed answer key against the foundation |
-| `make tools` | build `tools/ref/refsolve` (needed to make your own instances) |
-| `make test` | run the `grade.py` regression suite |
-
-## Rules
-
-C++17 only, standard library only, single-threaded final binary, 4 GB memory
-cap, no precomputed answers in the binary, output must match the foundation
-exactly, and the solver must be derived from `dijkstra_foundation.cpp` rather
-than being a parallel rewrite.
-
-`tools/` is instructor tooling and reference material. It is not part of your
-submission and its code is not subject to these rules — in particular
-`tools/ref/refsolve` is multi-threaded on purpose, because producing the answer
-keys single-threaded would take days.
+`grade.py` enforces rules 3, 5 and 6 automatically. Rules 1, 4 and 7 are
+checked by hand on submission.
 
 ## What to submit
 
-- `solver.cpp` (+ any headers)
-- `Makefile`
-- `result.json` from `grade.py --json`
-- `diff_from_foundation.patch`
-- `report.pdf` (one page)
-- `machine.txt`
+- `solver.cpp` (plus any headers you added)
+- `Makefile` (if you changed it)
+- `result.json` from step 4
+- `diff_from_foundation.patch`: `diff -u dijkstra_foundation.cpp solver.cpp > diff_from_foundation.patch`
+- `report.pdf`: one page on what you did and why it helped
+- `machine.txt`: your CPU model and RAM
+
+## How the score works
+
+For each instance, `speedup = T_base / T_solver`, where `T_base` is the
+unmodified foundation and `T_solver` is your program, both timed by `grade.py`
+on your machine. Your score is the geometric mean of the six speedups.
+
+- **There is no cap.** 400x faster scores 400.
+- **A failed instance scores 0.1 and still counts.** Wrong answers, a timeout,
+  too much memory, or extra threads on one instance drag down your mean; they
+  are never dropped.
+- Two instances are **LOCAL** (mostly short-range queries), four are **GLOBAL**
+  (long-range). `grade.py` also reports the two sub-means, but the overall
+  geometric mean is your score.
+
+### What the notes mean
+
+| note | meaning | score for that instance |
+|---|---|---|
+| `ok` | correct, timed | `T_base / T_solver` |
+| `WRONG` | output differs from the answer key | 0.1 |
+| `TIMEOUT` | exceeded 3600 s | 0.1 |
+| `MEMORY` | exceeded 4 GB | 0.1 |
+| `THREADS` | used more than one thread | 0.1 |
+| `NONDETERMINISTIC` | the three timing runs gave different output | 0.1 |
+| `CRASH` / `NOOUTPUT` | non-zero exit, or no output file written | 0.1 |
+
+## The data
+
+Six instances are scored. Each is a different kind of graph, so a trick that
+helps on one may not help on another:
+
+| instance | vertices | edges | queries | what it is |
+|---|---:|---:|---:|---|
+| `road2d_large` | 300,304 | 1,629,732 | 200,000 | directed road network with coordinates |
+| `lattice3d_large` | 300,763 | 902,289 | 30,000 | 3-D torus lattice, degree 6 |
+| `local2d_large` | 300,304 | 600,608 | 300,000 | 2-D lattice; 90 % of queries are short-range |
+| `scalefree_large` | 300,000 | 873,003 | 50,000 | directed, power-law degrees, 3 % of targets unreachable |
+| `hugeq_large` | 50,176 | 271,492 | 600,000 | small road graph, very many queries |
+| `wide64_large` | 1,999,396 | 3,998,792 | 30,000 | distances exceed 2³² — use 64-bit distances |
+
+Each instance is three files in `instances/`: `<name>.graph`, `<name>.queries`
+and `<name>.answers` (the key `grade.py` checks you against), plus a
+`<name>.meta.json` describing it (V, E, weight range, query mix, max distance).
+
+The `_dev` versions of the same six families are small (about 50k vertices,
+10k queries) and committed to the repo.
+
+**The final grading uses fresh instances** generated by the same code with the
+same parameters and a different random seed. Anything that depends on the
+exact bytes of the released files will not carry over; anything that depends
+on the structure of the graphs will.
+
+## File formats
+
+Vertex indices are 0-based.
+
+```
+<graph>                 <queries>           <output>
+V E FLAGS               Q                   d_1
+u_1 v_1 w_1             s_1 t_1             ...
+...                     ...                 d_Q       (-1 if unreachable)
+u_E v_E w_E             s_Q t_Q
+[x_0 y_0                 (coordinates, only if FLAGS bit 0 is set)
+ ...
+ x_{V-1} y_{V-1}]
+```
+
+`FLAGS` bit 0 (value 1): a coordinate block follows the edges. Bit 1 (value 2):
+the graph is **directed** and `u v w` is the arc `u -> v` only; otherwise each
+line is an undirected edge. Coordinates are integers. Weights are positive and
+fit in `int32`; **distances may not fit in 32 bits**.
+
+## Everything else (optional reading)
+
+**Sanity-check your environment** before you start:
+
+```sh
+make foundation && make check-data
+```
+
+This runs the foundation on the dev set and compares it with the shipped
+answer keys. If it reports anything other than `ok`, your toolchain is broken —
+ask before going further.
+
+**How `T_base` is measured.** Running the unmodified foundation on all
+600,000 queries of an instance would take up to half an hour each time you
+score yourself, so `grade.py` times it on two short prefixes of the query file
+and extrapolates (parsing cost plus per-query cost). The error is a few
+percent and identical for everyone on a given instance. Pass `--baseline-full`
+on a dev instance to see the extrapolation checked against a full run.
+
+**Your solver is run three times** and the best time is kept. Machine noise is
+a few percent, so don't chase improvements smaller than that.
+
+**Timings are machine-dependent**, so `T_base` and `T_solver` are always
+measured on the same machine in the same run. Close other programs while
+scoring. The times above are from an Apple-silicon laptop; an older machine may
+take twice as long.
+
+**Practice instances.** `tools/gen/` is the real generator. To make fresh
+instances with your own seed:
+
+```sh
+make tools                                          # builds tools/ref/refsolve
+python3 -m tools.gen --manifest tools/manifest/public.json \
+        --instance road2d_dev --seed 12345 --salt mine --out mydata
+tools/ref/refsolve plan mydata/road2d_dev.graph mydata/road2d_dev.qplan \
+        mydata/road2d_dev.queries mydata/road2d_dev.answers
+```
+
+Then list them in your own instances file in the same `<category> <graph>
+<queries>` format and point `--instances` at it. `grade.py` finds the
+`.answers` file next to the `.queries` file automatically.
+
+**`tools/` is instructor tooling.** It is not part of your submission and is
+not subject to the rules above.
+
+| make target | what it does |
+|---|---|
+| `make foundation` | build the baseline |
+| `make solver` | build your `solver.cpp` |
+| `make check-data` | verify the dev answer keys against the foundation |
+| `make tools` | build the reference solver used to make practice instances |
+| `make test` | run `grade.py`'s own regression tests |

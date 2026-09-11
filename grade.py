@@ -23,9 +23,9 @@ LOCAL (latency -- short-range queries and per-query fixed costs dominate).
 
 --- Why T_base is estimated rather than measured in full ---------------------
 
-The scored instances carry up to 5,000,000 queries.  Running the foundation
-over all of them takes hours per instance, so timing it in full the way v1 did
-is simply not available any more.
+The scored instances carry up to 600,000 queries.  Running the foundation
+over all of them takes about 1.7 hours, and the baseline has to be re-timed
+on every grading machine, so it is not measured in full.
 
 Instead the foundation is timed on two short prefixes of the query file and
 T(q) = a + b*q is fitted: `a` absorbs graph parsing, `b` the per-query cost
@@ -79,10 +79,10 @@ CLIP_LO, CLIP_HI = 0.1, 1_000_000.0   # effectively uncapped; see below
 MEM_CAP_BYTES = 4 << 30               # the 4 GB rule, now actually enforced
 DEFAULT_TIMEOUT = 3600.0
 
-# v1 clipped at 100x.  On the scored instances a good submission is worth
-# several hundred, so the cap silently tied everyone at the top -- the single
-# line that did the most damage to the ranking.  CLIP_HI survives only as a
-# guard against a division blowing up on a near-zero measurement.
+# The score is deliberately uncapped: on the scored instances a good
+# submission is worth several hundred x, and a cap would tie the top of the
+# field.  CLIP_HI survives only as a guard against a division blowing up on a
+# near-zero measurement.
 
 FOUNDATION_SRC = "dijkstra_foundation.cpp"
 FOUNDATION_FLAGS = ["-O2", "-std=c++17"]
@@ -258,8 +258,7 @@ def time_run(binary, graph, queries, out, timeout, enforce_limits=True):
 def best_of(binary, graph, queries, out, n, timeout, enforce_limits=True):
     """Best-of-n wall clock, but any failing repeat fails the instance.
 
-    Output files are kept per repeat so nondeterminism across runs is visible;
-    v1 overwrote the same path and compared only whatever survived.
+    Output files are kept per repeat so nondeterminism across runs is visible.
     """
     best = None
     digests = set()
@@ -293,9 +292,8 @@ def sha256_file(path, chunk=1 << 20):
 def normalised_digest(path):
     """Digest of the answer sequence, insensitive to trailing whitespace.
 
-    Streamed rather than built into two Python lists: at 5,000,000 queries the
-    v1 `[ln.strip() for ln in f] == ...` comparison materialised roughly 200 MB
-    per side.
+    Streamed rather than built into two Python lists, which at hundreds of
+    thousands of queries would materialise tens of MB per side.
     """
     h = hashlib.sha256()
     with open(path, "rb") as f:
@@ -426,6 +424,13 @@ def main():
                      f"{sorted(ALL_CATEGORIES)}): {line}")
         instances.append((parts[0], Path(parts[1]), Path(parts[2])))
 
+    missing = [str(p) for _, g, q in instances for p in (g, q) if not p.exists()]
+    if missing:
+        hint = ("\nThe scored set is not in the repo -- fetch it first with:  "
+                "scripts/download_large.sh"
+                if any("_large" in m for m in missing) else "")
+        sys.exit("missing instance files:\n  " + "\n  ".join(missing) + hint)
+
     speedups_by_cat = defaultdict(list)
     rows = []
     records = []
@@ -482,10 +487,9 @@ def main():
                         note = "ok"
                         rec["raw_speedup"] = raw
 
-            # Every instance contributes, including the failures.  In v1 a WRONG
-            # instance computed speedup = 0.0 and then never appended it, and
-            # geomean() filtered non-positive values anyway -- so failing your
-            # weakest instance *removed* it from the mean and raised your score.
+            # Every instance contributes, including the failures: a failed
+            # instance scores the floor and drags the mean down rather than
+            # vanishing from it.
             speedups_by_cat[cat].append(speedup)
 
             rows.append((cat, gpath.name, t_base, t_stu, t_stu_res.maxrss,

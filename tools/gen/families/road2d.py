@@ -1,13 +1,11 @@
 """ROAD: a perturbed lattice carrying a *travel-time* metric.
 
-Topology is deliberately the same shape as the v1 ROAD family -- a jittered
-S x S lattice plus random diagonals.  What changes is the weight model, and
-that is the whole point of the family.
+Topology is a jittered S x S lattice plus random diagonals.  The weight model
+is the whole point of the family.
 
-v1 used ``w = round(1e6 * ||u-v||)``, i.e. the graph metric *was* the Euclidean
-metric (measured correlation 1.0000, lambda = 999,098 against a per-edge ratio
-of 1e6).  A metric that is a scaled copy of the coordinate embedding hands out
-a large advantage for nothing, which is not a property anyone chose.
+Weights are deliberately *not* ``w = round(1e6 * ||u-v||)``: that would make
+the graph metric a scaled copy of the coordinate embedding, which hands out a
+large advantage for nothing.
 
 Here each edge belongs to a road class with a speed factor, and
 ``w = round(TIME_SCALE * ||u-v|| / speed * noise)``.  Shortest paths prefer the

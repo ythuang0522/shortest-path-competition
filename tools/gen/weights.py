@@ -1,8 +1,7 @@
 """Edge-weight models.
 
-The v1 datasets used ``w = round(1e6 * euclidean_length)`` for ROAD and CLUSTER,
-which makes the graph metric a scaled copy of the Euclidean metric -- see
-families/road2d.py for why that turned out to be the dataset's biggest flaw.
+Weights are deliberately not ``round(1e6 * euclidean_length)``: that would make
+the graph metric a scaled copy of the Euclidean metric -- see families/road2d.py.
 """
 
 import math

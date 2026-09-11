@@ -16,8 +16,8 @@ Plan file format, one line per query, already shuffled:
 Why the mixes matter
 --------------------
 Uniform-random pairs on a two-million-node graph are almost all at Dijkstra
-rank ~V.  The v1 datasets sampled nothing else, so they measured a single point
-on the query-difficulty curve.  Rank stratification (Sanders & Schultes) sweeps
+rank ~V.  Sampling nothing else would measure a single point on the
+query-difficulty curve.  Rank stratification (Sanders & Schultes) sweeps
 the curve instead: query cost is reported as a function of the rank at which
 the target settles, and different ranks stress very different things.
 """
@@ -47,8 +47,7 @@ def _sources(rng, V, Q, policy):
 
     Reusing a source lets one search answer several queries, which measures
     something other than what the instance is for -- so sources are distinct
-    wherever Q allows it.  The v1 files reused sources up to 8 times on the
-    small tier purely by birthday collision, with nobody having decided that.
+    wherever Q allows it, rather than left to birthday collisions.
     """
     if policy == "strict":
         if Q > V:

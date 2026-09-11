@@ -104,11 +104,10 @@ class Graph:
     # -- postconditions ----------------------------------------------------
 
     def check(self, expect_components=1):
-        """Assertions the v1 generator lacked.
+        """Postconditions every generated graph must satisfy.
 
-        The v1 GRID instances claimed in the README that the largest
-        connected component equals V; in fact two of them had 3 and 15
-        components.  Nothing caught it because nothing checked.
+        A lattice or road generator can quietly leave the graph disconnected;
+        the README promises one component, so check it instead of assuming.
         """
         V, E = self.V, self.E
         if V <= 0 or E <= 0:
@@ -139,8 +138,7 @@ def ensure_weakly_connected(g, rng, weight):
 
     Returns the number of arcs added.  Random constructions -- the directed
     configuration model in particular -- reliably leave a handful of tiny
-    components behind, and leaving them there is how the v1 GRID family ended up
-    with 15 components while the README promised one.  Repairing here means the
+    components behind, while the README promises one.  Repairing here means the
     postcondition in ``Graph.check`` can be an assertion rather than a hope.
     """
     labels, reps = g.component_labels()

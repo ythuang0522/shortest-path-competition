@@ -55,11 +55,10 @@ def admissible_lambda(g):
     """min_e w(e)/||u-v||, the largest scale an admissible Euclidean A*
     potential may use.
 
-    This is the number that made the v1 ROAD family too easy: with
-    ``w = round(1e6 * ||u-v||)`` the ratio is constant, so lambda*d_E(u,t) is
-    ~99.9% tight and A* walks almost straight at the target.  A travel-time
-    metric drags lambda down to the slowest road class, leaving the potential
-    slack by roughly max_speed * exp(clamp*sigma).  Recorded in the metadata so
+    With ``w = round(1e6 * ||u-v||)`` the ratio would be constant and the graph
+    metric a scaled copy of the coordinate embedding.  A travel-time metric
+    drags lambda down to the slowest road class, so coordinates only loosely
+    predict distances.  Recorded in the metadata so
     a regression is visible rather than silent.
     """
     if g.x is None:

@@ -14,10 +14,9 @@ For each instance:
   4. refsolve probe       -> Dijkstra vs A* search space
   5. thresholds           -> the checks below, which FAIL THE BUILD
 
-The thresholds are the point of this script. The v1 ROAD family shipped with
-edge weights exactly proportional to Euclidean length, which gave one heuristic
-a large unintended advantage; nothing caught it because nothing was checking.
-Now something checks.
+The thresholds are the point of this script: a road family whose edge weights
+are exactly proportional to Euclidean length would hand out a large unintended
+advantage, so the build checks for it instead of trusting the generator.
 """
 
 import argparse
