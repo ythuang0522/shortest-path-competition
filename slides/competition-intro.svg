@@ -1,0 +1,246 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" width="1920" height="1080"
+     preserveAspectRatio="xMidYMid meet" role="img" aria-labelledby="ttl dsc">
+  <title id="ttl">Shortest-Path Algorithms Competition — task, data and scoring</title>
+  <desc id="dsc">Fork the provided Dijkstra into solver.cpp and make it faster with identical output. Six graph families across three size tiers. One program, grade.py, builds and times the foundation, runs your solver, checks the answers and computes the score.</desc>
+
+  <defs>
+    <marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#7C8B96"/>
+    </marker>
+    <marker id="arA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#C2410C"/>
+    </marker>
+    <marker id="arW" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M0,1 L9,5 L0,9 z" fill="#8FB0C7"/>
+    </marker>
+  </defs>
+
+  <style>
+    .s   { font-family:"Inter","Helvetica Neue",Helvetica,Arial,sans-serif; }
+    .m   { font-family:"SF Mono",Menlo,Consolas,"DejaVu Sans Mono",monospace; }
+    .h1  { font-size:44px; font-weight:700; fill:#FFFFFF; letter-spacing:-0.4px; }
+    .h2  { font-size:21px; fill:#AEC4D6; }
+    .sec { font-size:26px; font-weight:700; fill:#14324D; }
+    .bd  { font-size:19px; fill:#1B1B1B; }
+    .bds { font-size:18px; fill:#1B1B1B; }
+    .sm  { font-size:16px; fill:#6B6B6B; }
+    .xs  { font-size:14px; fill:#6B6B6B; }
+    .acc { font-size:19px; font-weight:700; fill:#C2410C; }
+    .lbl { font-size:15px; font-weight:700; fill:#0E7490; letter-spacing:0.6px; }
+    .fam { font-size:17px; fill:#0E7490; }
+  </style>
+
+  <rect width="1920" height="1080" fill="#FAFAF8"/>
+
+  <!-- ========== header ========== -->
+  <rect width="1920" height="118" fill="#14324D"/>
+  <text class="s h1" x="56" y="60">Shortest-Path Algorithms Competition</text>
+  <text class="s h2" x="56" y="95">Make Dijkstra faster — the task, the data, and how you are scored</text>
+  <text class="s" x="1864" y="56" text-anchor="end" font-size="19" fill="#7FA3BE">v2 dataset</text>
+  <text class="s" x="1864" y="88" text-anchor="end" font-size="16" fill="#5F87A6">full spec: README.md</text>
+
+  <!-- ========== panel 1 : the task ========== -->
+  <rect x="56" y="150" width="584" height="796" rx="10" fill="#FFFFFF" stroke="#E3E2DD"/>
+  <circle cx="112" cy="192" r="19" fill="#0E7490"/>
+  <text class="s" x="112" y="199" text-anchor="middle" font-size="21" font-weight="700" fill="#FFFFFF">1</text>
+  <text class="s sec" x="146" y="201">What you write</text>
+  <line x1="88" y1="228" x2="608" y2="228" stroke="#E3E2DD"/>
+
+  <!-- fork-the-foundation flow -->
+  <rect x="88" y="252" width="196" height="42" rx="6" fill="#F2F1ED" stroke="#DCDBD6"/>
+  <text class="m" x="186" y="278" text-anchor="middle" font-size="14" fill="#14324D">dijkstra_foundation.cpp</text>
+  <text class="s xs" x="292" y="268" fill="#7C8B96">cp</text>
+  <path d="M288,278 L316,278" stroke="#7C8B96" stroke-width="2" marker-end="url(#ar)" fill="none"/>
+  <rect x="322" y="252" width="112" height="42" rx="6" fill="#FFF4EC" stroke="#C2410C"/>
+  <text class="m" x="378" y="278" text-anchor="middle" font-size="14" fill="#C2410C">solver.cpp</text>
+  <text class="s xs" x="442" y="268" fill="#7C8B96">make</text>
+  <path d="M438,278 L472,278" stroke="#7C8B96" stroke-width="2" marker-end="url(#ar)" fill="none"/>
+  <rect x="478" y="252" width="130" height="42" rx="6" fill="#14324D"/>
+  <text class="m" x="543" y="278" text-anchor="middle" font-size="15" fill="#FFFFFF">./solver</text>
+
+  <text class="s acc" x="88" y="330" font-size="18">Leave the foundation in place.</text>
+  <text class="s sm"  x="88" y="354">grade.py compiles it to measure T_base — if you edit it, you</text>
+  <text class="s sm"  x="88" y="376">are changing your own baseline.</text>
+
+  <text class="s bd"  x="88" y="416">Same interface, same output, faster:</text>
+  <rect x="88" y="430" width="520" height="40" rx="6" fill="#F2F1ED"/>
+  <text class="m" x="106" y="456" font-size="16" fill="#14324D">./solver &lt;graph&gt; &lt;queries&gt; &lt;output&gt;</text>
+
+  <text class="s lbl" x="88" y="504">FORMAT — WHAT CHANGED SINCE v1</text>
+  <rect x="88" y="522" width="6" height="6" fill="#0E7490"/>
+  <text class="s bds" x="108" y="530">Header is <tspan class="m" font-size="16">V E FLAGS</tspan> — bit0 = coordinates, bit1 = directed</text>
+  <text class="s sm"  x="108" y="554">when directed, <tspan class="m" font-size="15">u v w</tspan> is the arc u → v only</text>
+  <rect x="88" y="582" width="6" height="6" fill="#0E7490"/>
+  <text class="s bds" x="108" y="590">Coordinates are integers; weights fit in int32</text>
+  <rect x="88" y="620" width="6" height="6" fill="#C2410C"/>
+  <text class="s acc" x="108" y="628" font-size="18">Distances do not always fit in 32 bits</text>
+  <text class="s sm"  x="108" y="652">wide64 reaches 28,459,907,807</text>
+
+  <rect x="88" y="678" width="520" height="222" rx="8" fill="#F7F9FA" stroke="#DDE7EC"/>
+  <text class="s lbl" x="110" y="708">RULES — ALL OF THESE ARE ACTUALLY CHECKED</text>
+  <text class="s bds" x="110" y="740">C++17, standard library only</text>
+  <text class="s bds" x="110" y="768">Must be derived from the foundation (submit a diff)</text>
+  <text class="s bds" x="110" y="796">Single-threaded<tspan class="s" font-size="15" fill="#6B6B6B">  — CPU time ≤ 1.4 × wall</tspan></text>
+  <text class="s bds" x="110" y="824">4 GB memory<tspan class="s" font-size="15" fill="#6B6B6B">  — RLIMIT_AS plus peak RSS</tspan></text>
+  <text class="s bds" x="110" y="852">A per-run timeout</text>
+  <text class="s bds" x="110" y="880">Three runs must produce identical output</text>
+
+  <text class="m" x="88" y="926" font-size="15" fill="#6B6B6B">make foundation &amp;&amp; make check-data</text>
+
+  <!-- ========== panel 2 : the data ========== -->
+  <rect x="668" y="150" width="584" height="796" rx="10" fill="#FFFFFF" stroke="#E3E2DD"/>
+  <circle cx="724" cy="192" r="19" fill="#0E7490"/>
+  <text class="s" x="724" y="199" text-anchor="middle" font-size="21" font-weight="700" fill="#FFFFFF">2</text>
+  <text class="s sec" x="758" y="201">The data</text>
+  <line x1="700" y1="228" x2="1220" y2="228" stroke="#E3E2DD"/>
+
+  <rect x="700" y="250" width="168" height="64" rx="8" fill="#F2F1ED"/>
+  <rect x="716" y="262" width="26" height="10" rx="2" fill="#9FB3BF"/>
+  <text class="m" x="752" y="272" font-size="16" fill="#14324D">dev</text>
+  <text class="s xs" x="716" y="296">in the repo</text>
+  <text class="s xs" x="716" y="310">correctness suite</text>
+
+  <rect x="876" y="250" width="168" height="64" rx="8" fill="#F2F1ED"/>
+  <rect x="892" y="262" width="48" height="10" rx="2" fill="#9FB3BF"/>
+  <text class="m" x="950" y="272" font-size="16" fill="#14324D">medium</text>
+  <text class="s xs" x="892" y="296">download</text>
+  <text class="s xs" x="892" y="310">not scored</text>
+
+  <rect x="1052" y="250" width="168" height="64" rx="8" fill="#FFF4EC" stroke="#C2410C"/>
+  <rect x="1068" y="262" width="84" height="10" rx="2" fill="#C2410C"/>
+  <text class="m" x="1162" y="272" font-size="16" fill="#C2410C">large</text>
+  <text class="s xs" x="1068" y="296" fill="#8A4B22">download</text>
+  <text class="s xs" x="1068" y="310" fill="#8A4B22">this is the graded one</text>
+
+  <text class="s lbl" x="700" y="346">SIX FAMILIES</text>
+
+  <g transform="translate(700,360)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#C9D4DC" stroke-width="1"><path d="M13,8V44M26,8V44M39,8V44M8,13H44M8,26H44M8,39H44"/></g>
+    <path d="M8,26H44" stroke="#14324D" stroke-width="2.6"/><path d="M26,8V44" stroke="#14324D" stroke-width="2.6"/>
+    <path d="M30,39H41" stroke="#C2410C" stroke-width="1.8" marker-end="url(#arA)"/>
+  </g>
+  <text class="m fam" x="766" y="382">road2d</text>
+  <text class="s bds" x="766" y="404" font-size="16">2-D road network, directed, with coordinates</text>
+
+  <g transform="translate(700,420)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#14324D" stroke-width="1.5" fill="none">
+      <rect x="9" y="17" width="24" height="24"/><rect x="19" y="9" width="24" height="24"/>
+      <path d="M9,17L19,9M33,17L43,9M9,41L19,33M33,41L43,33"/>
+    </g>
+    <circle cx="21" cy="29" r="2.4" fill="#0E7490"/><circle cx="31" cy="21" r="2.4" fill="#0E7490"/>
+  </g>
+  <text class="m fam" x="766" y="442">lattice3d</text>
+  <text class="s bds" x="766" y="464" font-size="16">3-D torus lattice, degree 6, no coordinates</text>
+
+  <g transform="translate(700,480)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#C9D4DC" stroke-width="1"><path d="M13,8V44M26,8V44M39,8V44M8,13H44M8,26H44M8,39H44"/></g>
+    <circle cx="26" cy="26" r="11" fill="#C2410C" fill-opacity="0.14" stroke="#C2410C" stroke-width="1.2"/>
+    <circle cx="21" cy="24" r="2.4" fill="#C2410C"/><circle cx="31" cy="29" r="2.4" fill="#C2410C"/>
+  </g>
+  <text class="m fam" x="766" y="502">local2d</text>
+  <text class="s bds" x="766" y="524" font-size="16">2-D lattice; 90% of queries are short-range</text>
+
+  <g transform="translate(700,540)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#9FB3BF" stroke-width="1">
+      <path d="M26,26L10,14M26,26L26,9M26,26L42,14M26,26L9,27M26,26L43,28M26,26L12,40M26,26L26,44M26,26L41,40"/>
+    </g>
+    <g fill="#9FB3BF">
+      <circle cx="10" cy="14" r="2"/><circle cx="26" cy="9" r="2"/><circle cx="42" cy="14" r="2"/>
+      <circle cx="9" cy="27" r="2"/><circle cx="43" cy="28" r="2"/><circle cx="12" cy="40" r="2"/>
+      <circle cx="26" cy="44" r="2"/><circle cx="41" cy="40" r="2"/>
+    </g>
+    <circle cx="26" cy="26" r="6.5" fill="#14324D"/>
+  </g>
+  <text class="m fam" x="766" y="562">scalefree</text>
+  <text class="s bds" x="766" y="584" font-size="16">directed, power-law in-degree, some unreachable</text>
+
+  <g transform="translate(700,600)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#9FB3BF" stroke-width="1.2" fill="none"><path d="M12,14L12,34M12,14L24,24M12,34L24,24"/></g>
+    <g fill="#14324D"><circle cx="12" cy="14" r="2.6"/><circle cx="12" cy="34" r="2.6"/><circle cx="24" cy="24" r="2.6"/></g>
+    <g stroke="#C2410C" stroke-width="1.4">
+      <path d="M31,12H43" marker-end="url(#arA)"/><path d="M31,19H43" marker-end="url(#arA)"/>
+      <path d="M31,26H43" marker-end="url(#arA)"/><path d="M31,33H43" marker-end="url(#arA)"/>
+      <path d="M31,40H43" marker-end="url(#arA)"/>
+    </g>
+  </g>
+  <text class="m fam" x="766" y="622">hugeq</text>
+  <text class="s bds" x="766" y="644" font-size="16">small graph, very many queries</text>
+
+  <g transform="translate(700,660)">
+    <rect width="52" height="52" rx="5" fill="#F7F9FA" stroke="#E3E2DD"/>
+    <g stroke="#9FB3BF" stroke-width="1.2"><path d="M10,16H42"/></g>
+    <g fill="#14324D"><circle cx="10" cy="16" r="2.6"/><circle cx="26" cy="16" r="2.6"/><circle cx="42" cy="16" r="2.6"/></g>
+    <rect x="10" y="26" width="10" height="5" rx="1" fill="#C9D4DC"/>
+    <rect x="10" y="34" width="22" height="5" rx="1" fill="#9FB3BF"/>
+    <rect x="10" y="42" width="32" height="5" rx="1" fill="#C2410C"/>
+  </g>
+  <text class="m fam" x="766" y="682">wide64</text>
+  <text class="s bds" x="766" y="704" font-size="16">shortest distances exceed 2³²</text>
+
+  <text class="s lbl" x="700" y="754">SCALE (approximate — final sizes to be announced)</text>
+  <text class="s bds" x="700" y="782">dev — V ≈ 50 k, Q = 10 k</text>
+  <text class="s bds" x="700" y="808">large — V ≈ 200 k – 2 M, Q ≈ 40 k – 5 M</text>
+
+  <rect x="700" y="828" width="520" height="76" rx="8" fill="#FFF4EC" stroke="#F0C9A8"/>
+  <text class="s acc" x="722" y="858" font-size="18">Up to 500× more queries per instance than v1.</text>
+  <text class="s"     x="722" y="884" font-size="16" fill="#8A4B22">A one-time setup cost now has room to pay for itself.</text>
+
+  <text class="s xs" x="700" y="928">Each instance ships a .meta.json with V, E, weight range and max distance.</text>
+
+  <!-- ========== panel 3 : scoring ========== -->
+  <rect x="1280" y="150" width="584" height="796" rx="10" fill="#FFFFFF" stroke="#E3E2DD"/>
+  <circle cx="1336" cy="192" r="19" fill="#0E7490"/>
+  <text class="s" x="1336" y="199" text-anchor="middle" font-size="21" font-weight="700" fill="#FFFFFF">3</text>
+  <text class="s sec" x="1370" y="201">How it is scored</text>
+  <line x1="1312" y1="228" x2="1832" y2="228" stroke="#E3E2DD"/>
+
+  <text class="s lbl" x="1312" y="258">ONE PROGRAM DOES ALL OF IT</text>
+  <rect x="1312" y="270" width="520" height="70" rx="8" fill="#14324D"/>
+  <text class="m" x="1332" y="300" font-size="15" fill="#FFFFFF">python3 grade.py --solver ./solver \</text>
+  <text class="m" x="1332" y="324" font-size="15" fill="#BFD6E6">    --instances instances.txt --json result.json</text>
+  <text class="s sm" x="1312" y="366">You never time anything by hand, and you never run the</text>
+  <text class="s sm" x="1312" y="388">foundation yourself. Submit the result.json it writes.</text>
+
+  <!-- what grade.py does -->
+  <rect x="1312" y="404" width="520" height="146" rx="8" fill="#F7F9FA" stroke="#DDE7EC"/>
+  <circle cx="1336" cy="434" r="11" fill="#0E7490"/>
+  <text class="s" x="1336" y="439" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">1</text>
+  <text class="s bds" x="1356" y="439" font-size="17">builds the foundation at -O2, times it → <tspan class="m" font-size="16">T_base</tspan></text>
+  <text class="s xs" x="1356" y="458">estimated by extrapolation, not by running all 5 M queries</text>
+  <circle cx="1336" cy="486" r="11" fill="#0E7490"/>
+  <text class="s" x="1336" y="491" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">2</text>
+  <text class="s bds" x="1356" y="491" font-size="17">runs your solver three times → <tspan class="m" font-size="16">T_solver</tspan></text>
+  <circle cx="1336" cy="524" r="11" fill="#0E7490"/>
+  <text class="s" x="1336" y="529" text-anchor="middle" font-size="13" font-weight="700" fill="#FFFFFF">3</text>
+  <text class="s bds" x="1356" y="529" font-size="17">checks your output against the shipped <tspan class="m" font-size="16">.answers</tspan></text>
+
+  <rect x="1312" y="566" width="520" height="54" rx="8" fill="#F2F1ED"/>
+  <text class="m" x="1572" y="600" text-anchor="middle" font-size="20" fill="#14324D">speedup = T_base / T_solver</text>
+  <text class="s bd" x="1312" y="648">Score = geometric mean, on two tracks</text>
+  <text class="s sm" x="1312" y="672">GLOBAL (throughput) and LOCAL (short-range latency)</text>
+
+  <text class="s lbl" x="1312" y="712">SCORE RANGE</text>
+  <text class="s xs"  x="1312" y="740">v1</text>
+  <rect x="1346" y="728" width="214" height="14" rx="3" fill="#C9D4DC"/>
+  <rect x="1560" y="721" width="6" height="28" rx="2" fill="#B3261E"/>
+  <text class="s xs" x="1578" y="740" fill="#B3261E">capped at 100×</text>
+  <text class="s xs"  x="1312" y="778">v2</text>
+  <rect x="1346" y="766" width="430" height="14" rx="3" fill="#C2410C"/>
+  <path d="M1778,773 L1816,773" stroke="#C2410C" stroke-width="3" marker-end="url(#arA)" fill="none"/>
+  <text class="s acc" x="1346" y="808" font-size="18">No ceiling — 400× faster scores 400.</text>
+
+  <text class="s acc" x="1312" y="854" font-size="18">A wrong instance scores 0.1 — and still counts.</text>
+  <text class="s sm"  x="1312" y="878">It drags your mean down; it is not quietly dropped.</text>
+  <text class="s xs"  x="1312" y="918">Because grade.py builds the foundation itself, T_base does not</text>
+  <text class="s xs"  x="1312" y="936">depend on your compiler flags.</text>
+
+  <!-- ========== footer ========== -->
+  <rect x="0" y="966" width="1920" height="114" fill="#14324D"/>
+  <text class="s" x="56" y="1006" font-size="18" fill="#FFFFFF">Hidden test set — you get the full generator (<tspan class="m" font-size="17" fill="#BFD6E6">tools/gen</tspan>). Grading runs the same code with the same parameters and a different seed, so tuning to the published bytes will not transfer.</text>
+  <text class="s" x="56" y="1042" font-size="17" fill="#A9C2D6">Submit — solver.cpp · Makefile · result.json · diff_from_foundation.patch · report.pdf · machine.txt</text>
+</svg>
