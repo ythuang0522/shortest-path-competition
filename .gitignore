@@ -23,12 +23,9 @@ tools/discriminate.py
 tools/fuzz_solvers.py
 
 # --- Per-student / local work ---
-baseline_times.txt
-solver_times.txt
-machine.txt
-diff_from_foundation.patch
+solver.cpp
+result.json
 *.tmp.out
-grade_result.json
 
 # --- Downloadable tier (distributed via GitHub Releases, not git) ---
 # Only the *_dev tier is committed.
