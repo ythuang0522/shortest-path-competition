@@ -8,13 +8,19 @@ tools/ref/refsolve
 
 # --- Instructor-only material (NEVER commit to the student repo) ---
 # The generator itself (tools/gen) IS shipped -- students need it to make
-# practice instances with their own seeds. Only the secret seed, the instances
-# it produces, and the design rationale stay behind.
+# practice instances with their own seeds. What stays behind is the secret
+# seed, the instances it produces, the design rationale, and -- most
+# importantly -- the reference solvers, which are complete working
+# implementations of exactly the techniques the assignment asks students to
+# find. Publishing tools/ref/solvers would be publishing the answer.
 docs/
 tools/manifest/hidden.json
 checksums/hidden.sha256
 instances_hidden/
 outputs/
+tools/ref/solvers/
+tools/discriminate.py
+tools/fuzz_solvers.py
 
 # --- Per-student / local work ---
 baseline_times.txt

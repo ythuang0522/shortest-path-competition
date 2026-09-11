@@ -26,10 +26,13 @@ clean:
 # rules: no OpenMP, C++17, standard library only. Used by
 # tools/discriminate.py to check that the dataset actually separates
 # different levels of solution.
-SOLVERS := solvers/bidij solvers/alt solvers/ch
+# Present only in the instructor's checkout; see .gitignore.
+SOLVERS := $(patsubst %.cpp,%,$(wildcard solvers/*.cpp))
 
 .PHONY: solvers
 solvers: $(SOLVERS)
+	@if [ -z "$(SOLVERS)" ]; then \
+	  echo "no solvers/*.cpp present -- these are instructor-only"; fi
 
 solvers/%: solvers/%.cpp solvers/common.hpp
 	$(CXX) $(CXXFLAGS) -o $@ $<
