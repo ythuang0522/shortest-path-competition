@@ -88,6 +88,26 @@ FOUNDATION_SRC = "dijkstra_foundation.cpp"
 FOUNDATION_FLAGS = ["-O2", "-std=c++17"]
 
 
+def platform_cxxflags():
+    """Header-search fix for broken macOS Command Line Tools (see Makefile).
+
+    Some CLT installs ship an almost-empty /usr/include/c++/v1, so <algorithm>
+    is not found.  Fall back to the SDK's copy.  Adds no codegen flags, so the
+    pinned -O2 baseline is unaffected.  No-op elsewhere.
+    """
+    if sys.platform != "darwin":
+        return []
+    clt = Path("/Library/Developer/CommandLineTools/usr/include/c++/v1/cstdint")
+    if clt.exists():
+        return []
+    r = subprocess.run(["xcrun", "--sdk", "macosx", "--show-sdk-path"],
+                       capture_output=True, text=True)
+    if r.returncode != 0:
+        return []
+    inc = Path(r.stdout.strip()) / "usr/include/c++/v1"
+    return ["-isystem", str(inc)] if (inc / "cstdint").exists() else []
+
+
 # --------------------------------------------------------------- running ----
 
 class RunResult:
@@ -95,7 +115,7 @@ class RunResult:
         self.wall = wall
         self.cpu = cpu
         self.maxrss = maxrss
-        self.status = status        # "ok" | "timeout" | "crash" | "memory" | "threads"
+        self.status = status        # "ok" | "timeout" | "crash" | "memory" | "threads" | "nooutput"
         self.stderr = stderr
 
     @property
@@ -104,6 +124,39 @@ class RunResult:
 
 
 _RSS_UNIT = 1 if sys.platform == "darwin" else 1024   # ru_maxrss: bytes vs KiB
+
+
+class _Footprint:
+    """Live memory footprint of a child on macOS, via proc_pid_rusage.
+
+    macOS refuses to lower RLIMIT_AS, and ru_maxrss is useless as a cap there:
+    the memory compressor evicts pages as fast as a hog dirties them, so a
+    5 GB allocation can show a 3 GB peak RSS.  phys_footprint is what the
+    kernel itself uses for memory limits -- resident plus compressed pages --
+    so grade.py samples it while polling and kills a child that crosses the
+    cap.  Elsewhere this is a no-op and RLIMIT_AS does the job.
+    """
+    _V2, _SIZE, _OFF = 2, 160, 72          # RUSAGE_INFO_V2, sizeof, ri_phys_footprint
+
+    def __init__(self):
+        self.lib = None
+        if sys.platform == "darwin":
+            try:
+                import ctypes, ctypes.util
+                self.lib = ctypes.CDLL(ctypes.util.find_library("proc") or "libproc.dylib")
+                self.buf = ctypes.create_string_buffer(self._SIZE)
+            except OSError:
+                self.lib = None
+
+    def sample(self, pid):
+        if self.lib is None:
+            return 0
+        if self.lib.proc_pid_rusage(pid, self._V2, self.buf) != 0:
+            return 0
+        return int.from_bytes(self.buf.raw[self._OFF:self._OFF + 8], "little")
+
+
+_FOOTPRINT = _Footprint()
 
 
 def time_run(binary, graph, queries, out, timeout, enforce_limits=True):
@@ -126,8 +179,14 @@ def time_run(binary, graph, queries, out, timeout, enforce_limits=True):
             os.dup2(errfd_w, 2)
             os.close(errfd_w)
             if enforce_limits:
-                resource.setrlimit(resource.RLIMIT_AS,
-                                   (MEM_CAP_BYTES, MEM_CAP_BYTES))
+                try:
+                    resource.setrlimit(resource.RLIMIT_AS,
+                                       (MEM_CAP_BYTES, MEM_CAP_BYTES))
+                except (OSError, ValueError):
+                    # macOS rejects lowering RLIMIT_AS.  The peak-RSS check
+                    # after the run still enforces the cap; a failure here
+                    # must not turn every run into a "crash".
+                    pass
             os.execv(str(binary), [str(binary), str(graph), str(queries), str(out)])
         except BaseException:
             os._exit(127)
@@ -146,20 +205,24 @@ def time_run(binary, graph, queries, out, timeout, enforce_limits=True):
 
     deadline = t0 + timeout
     status = rusage = None
-    killed = False
+    killed = over_cap = False
+    peak_footprint = 0
     while True:
         done, st, ru = os.wait4(pid, os.WNOHANG)
         if done:
             status, rusage = st, ru
             break
         now = time.perf_counter()
-        if now > deadline:
+        if enforce_limits:
+            peak_footprint = max(peak_footprint, _FOOTPRINT.sample(pid))
+        if now > deadline or (enforce_limits and peak_footprint > MEM_CAP_BYTES):
             try:
                 os.kill(pid, signal.SIGKILL)
             except ProcessLookupError:
                 pass
-            os.wait4(pid, 0)
-            killed = True
+            _, _, rusage = os.wait4(pid, 0)
+            killed = now > deadline
+            over_cap = not killed
             break
         # Poll tightly at first so short probe runs are not rounded up, then
         # back off once the run is clearly a long one.
@@ -173,7 +236,9 @@ def time_run(binary, graph, queries, out, timeout, enforce_limits=True):
 
     wall = t1 - t0
     cpu = rusage.ru_utime + rusage.ru_stime
-    rss = rusage.ru_maxrss * _RSS_UNIT
+    rss = max(rusage.ru_maxrss * _RSS_UNIT, peak_footprint)
+    if over_cap:
+        return RunResult(wall, cpu, rss, "memory", err)
     exited_ok = os.WIFEXITED(status) and os.WEXITSTATUS(status) == 0
 
     if not exited_ok:
@@ -202,6 +267,10 @@ def best_of(binary, graph, queries, out, n, timeout, enforce_limits=True):
         r = time_run(binary, graph, queries, out, timeout, enforce_limits)
         if not r.ok:
             return r, digests
+        if not Path(out).exists():
+            # Exit 0 but no output file.  Seen with a memory hog on macOS,
+            # where the missing RLIMIT_AS lets it finish "successfully".
+            return RunResult(r.wall, r.cpu, r.maxrss, "nooutput", r.stderr), digests
         digests.add(sha256_file(out))
         if best is None or r.wall < best.wall:
             best = r
@@ -258,7 +327,8 @@ def build_foundation(workdir, src=FOUNDATION_SRC):
         sys.exit(f"cannot find {src} -- run grade.py from the repository root")
     out = Path(workdir) / "foundation_pinned"
     cxx = os.environ.get("CXX") or shutil.which("c++") or "g++"
-    r = subprocess.run([cxx, *FOUNDATION_FLAGS, "-o", str(out), str(src)],
+    r = subprocess.run([cxx, *FOUNDATION_FLAGS, *platform_cxxflags(),
+                        "-o", str(out), str(src)],
                        capture_output=True, text=True)
     if r.returncode != 0:
         sys.exit(f"failed to build the foundation:\n{r.stderr}")

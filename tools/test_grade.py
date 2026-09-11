@@ -49,6 +49,7 @@ def run_grade(tmp, solver, extra=(), instances=None):
     rows = instances or [INST]
     ilist.write_text("".join(f"{c} {g} {q}\n" for c, g, q in rows))
     out = Path(tmp) / "r.json"
+    out.unlink(missing_ok=True)
     r = subprocess.run(
         [sys.executable, str(GRADE), "--solver", str(solver),
          "--instances", str(ilist), "--json", str(out), *extra],
@@ -108,8 +109,15 @@ def main():
         check("timeout is enforced", res["instances"][0]["note"] == "TIMEOUT",
               f"note={res['instances'][0]['note']}")
 
+        # Fill 5 GB with incompressible data.  Linux kills this at the
+        # allocation via RLIMIT_AS; macOS cannot lower RLIMIT_AS, so only peak
+        # the sampled footprint can catch it, and `exec` keeps the hog in the
+        # pid grade.py is watching.
         hog = stub(tmp, "hog.sh",
-                   'python3 -c "b=bytearray(5*1024*1024*1024); print(len(b))"\n')
+                   'exec python3 -c "import os; n=5*1024*1024*1024; b=bytearray(n); '
+                   'm=memoryview(b); c=os.urandom(1<<20)\n'
+                   'for i in range(0, n, 1<<20): m[i:i+(1<<20)]=c\n'
+                   'print(n)"\n')
         res, _ = run_grade(tmp, hog)
         check("4 GB cap is enforced",
               res["instances"][0]["note"] in ("MEMORY", "CRASH"),
@@ -136,6 +144,13 @@ def main():
         b, _ = run_grade(tmp, FOUNDATION, ["--baseline-full"])
         ta = a["instances"][0]["t_base"]
         tb = b["instances"][0]["t_base"]
+        if ta is None or tb is None or tb == 0:
+            check("agree within 30%", False,
+                  f"no baseline measured: probe={ta} full={tb} "
+                  f"note={a['instances'][0]['note']}/{b['instances'][0]['note']}")
+            print(f"\n{len(PASS)} passed, {len(FAIL)} failed")
+            print("failed: " + ", ".join(FAIL))
+            return 1
         err = abs(ta - tb) / tb
         # Single-shot comparison, so this is mostly a machine-noise check.
         # The systematic sampling bias, measured over 5 repetitions, is under

@@ -2,7 +2,7 @@
   "E": 271492,
   "Q": 10000,
   "V": 50176,
-  "argv": "--manifest tools/manifest/public.json --instance road2d_dev --out /tmp/dev",
+  "argv": "--manifest tools/manifest/public.json --instance road2d_dev --out instances",
   "component_sizes_top10": [
     50176
   ],
@@ -63,7 +63,7 @@
   "sha256": {
     "answers": "e6458cf5dee17e4f320c512d8889868b48765c1e67bc65d38a42dff961e50c81",
     "graph": "c352c21dee23d76b1253741697e0ee1608b16c3d782bbbfa4e07f476d326e703",
-    "queries": "eba16a27df4b97b71afa72921ea4ab49b39b43d24a1ad6b368f598f39bd53cda"
+    "queries": "2194af9d36ec630635ac46899ead21e752afda5e2761c858b7bc5dc67c4f0cd2"
   },
   "verify": {
     "failures": 0,

@@ -18,10 +18,9 @@ samples/
     tiny.expected         expected output (for sanity)
 instances/
     *_dev.{graph,queries,answers}    dev tier, committed here
-    *_medium.*                       download, unscored, for iteration
     *_large.*                        download, THIS IS THE SCORED SET
 checksums/                SHA-256 of every distributed file
-scripts/download_large.sh fetch the medium and large tiers
+scripts/download_large.sh fetch the large tier
 tools/gen/                the dataset generator (see "Practice instances")
 tools/ref/                reference solver used to produce the answer keys
 ```
@@ -30,14 +29,16 @@ tools/ref/                reference solver used to produce the answer keys
 
 | Tier | Where | Scored | Purpose |
 |---|---|:--:|---|
-| `_dev` | committed here | no | correctness suite; small enough to run the foundation on directly |
-| `_medium` | `scripts/download_large.sh medium` | no | iteration at realistic size |
-| `_large` | `scripts/download_large.sh` | **yes** | the graded run |
+| `_dev` | committed here | no | correctness suite and iteration; the foundation runs it in about 1.5 min |
+| `_large` | `scripts/download_large.sh` | **yes** | the graded run; the foundation needs about 1.7 h CPU for the whole tier, under 30 min per instance |
 
 ```sh
-scripts/download_large.sh          # large tier
-scripts/download_large.sh all      # medium + large
+scripts/download_large.sh
 ```
+
+Timings are from an Apple-silicon laptop; budget roughly double on an older
+machine. Every instance stays well inside the 3600 s per-run limit, so an
+unmodified foundation submitted as `solver` completes, it just scores 1.0x.
 
 Downloads are gzipped and checksum-verified on arrival, so a truncated
 download fails loudly instead of turning into a mysterious wrong answer.
@@ -132,7 +133,7 @@ python3 grade.py --solver ./solver --instances instances.txt --json result.json
 
 Point `--instances` at a file with one `<category> <graph> <queries>` line per
 instance; `instances.txt` ships wired to the dev tier, and you extend it with
-the medium and large instances once you have downloaded them. Categories are
+the large instances once you have downloaded them. Categories are
 `GLOBAL` (long-range queries, throughput-bound) or `LOCAL` (short-range
 queries, where per-query fixed costs dominate).
 
@@ -147,8 +148,8 @@ category, per track and overall. Four things about that are worth knowing:
 **The score is not capped.** If your solver is 400x faster, you score 400.
 
 **`T_base` is estimated, not measured in full.** The scored instances carry up
-to 5,000,000 queries; running the unmodified foundation over all of them takes
-hours. So `grade.py` times the foundation on two short prefixes of the query
+to 600,000 queries; running the unmodified foundation over all of them takes
+about 1.7 h. So `grade.py` times the foundation on two short prefixes of the query
 file and fits `T(q) = a + b·q` — `a` is parsing, `b` is per-query cost.
 
 Measured over 5 repetitions on the dev tier, the systematic error of a
@@ -175,7 +176,7 @@ settings. Your own `Makefile` governs only your solver.
 
 | Limit | How it is enforced |
 |---|---|
-| 4 GB memory | `RLIMIT_AS` on the child, plus peak RSS from `getrusage` |
+| 4 GB memory | `RLIMIT_AS` on the child, plus peak RSS from `getrusage` (macOS cannot lower `RLIMIT_AS`, so only the RSS check applies there) |
 | single-threaded | CPU time may not exceed 1.4x wall time |
 | time limit | `--timeout`, default 3600 s per run |
 | determinism | the three timing repeats must produce identical output |

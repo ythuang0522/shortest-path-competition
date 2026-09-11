@@ -1,13 +1,13 @@
 {
   "E": 271492,
-  "Q": 50000,
+  "Q": 10000,
   "V": 50176,
-  "argv": "--manifest tools/manifest/public.json --instance hugeq_dev --out /tmp/dev",
+  "argv": "--manifest tools/manifest/public.json --instance hugeq_dev --out instances",
   "component_sizes_top10": [
     50176
   ],
   "directed": true,
-  "distinct_sources": 50000,
+  "distinct_sources": 10000,
   "distinct_sources_policy": "balanced",
   "family": "road2d",
   "family_detail": {
@@ -38,21 +38,21 @@
     "oneway_frac": 0.08
   },
   "probe": {
-    "astar_reduction": 1.414,
+    "astar_reduction": 1.437,
     "lambda_admissible": 0.993157,
-    "mean_settled_astar": 17708.7,
-    "mean_settled_dijkstra": 25035.0,
+    "mean_settled_astar": 16219.7,
+    "mean_settled_dijkstra": 23301.9,
     "samples": 200
   },
   "query_counts": {
     "hub": 0,
-    "pair": 50000,
+    "pair": 10000,
     "rank": 0,
-    "selfpair": 50
+    "selfpair": 10
   },
   "query_mix": "uniform:1.0",
   "resolve": {
-    "Q": 50000,
+    "Q": 10000,
     "fits_uint32": true,
     "max_finite_distance": 54063176,
     "rank_truncated": 0,
@@ -61,9 +61,9 @@
   "salt": "public",
   "seed": 20260901,
   "sha256": {
-    "answers": "ecb93bafb1036ff75da79a96bc0c84ba30d37627001bba56b532c6b56047f7ee",
+    "answers": "f2651be26239ece73c5d4fccd36b4de7dc0f2e3ef1ce20a566b5c1d07326f322",
     "graph": "c352c21dee23d76b1253741697e0ee1608b16c3d782bbbfa4e07f476d326e703",
-    "queries": "455473bf83b9ab714452844a3160f214636508cdbb198cf07d245dfdf9fc1fd8"
+    "queries": "b4603d0eba5e5ba8e74de3bb3725b4874d3dd939eae3629aca64ed0fbed4151a"
   },
   "verify": {
     "failures": 0,

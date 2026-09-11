@@ -1,10 +1,8 @@
 #!/usr/bin/env bash
-# Fetch the medium and large instance tiers from the GitHub Release.
+# Fetch the scored large instance tier from the GitHub Release.
 #
 # Usage:
 #   scripts/download_large.sh            # the scored large tier
-#   scripts/download_large.sh medium     # the unscored iteration tier
-#   scripts/download_large.sh all
 #
 # Files arrive gzipped and are decompressed into instances/, so every path in
 # the README works unchanged.  Each file's SHA-256 is checked against
@@ -22,9 +20,7 @@ mkdir -p instances
 TIER="${1:-large}"
 case "$TIER" in
   large)  tiers=(large) ;;
-  medium) tiers=(medium) ;;
-  all)    tiers=(medium large) ;;
-  *) echo "usage: $0 [large|medium|all]" >&2; exit 2 ;;
+  *) echo "usage: $0 [large]" >&2; exit 2 ;;
 esac
 
 # The scored set. Each instance ships .graph, .queries and .answers -- the
@@ -32,7 +28,6 @@ esac
 # can afford to regenerate ground truth by running the foundation.
 large_names=(road2d_large lattice3d_large local2d_large scalefree_large
              hugeq_large wide64_large)
-medium_names=(road2d_medium lattice3d_medium local2d_medium scalefree_medium)
 
 sha256_of() {
   if command -v sha256sum >/dev/null 2>&1; then sha256sum "$1" | cut -d' ' -f1

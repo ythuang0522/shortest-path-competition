@@ -30,12 +30,8 @@ diff_from_foundation.patch
 *.tmp.out
 grade_result.json
 
-# --- Downloadable tiers (distributed via GitHub Releases, not git) ---
+# --- Downloadable tier (distributed via GitHub Releases, not git) ---
 # Only the *_dev tier is committed.
-instances/*_medium.graph
-instances/*_medium.queries
-instances/*_medium.answers
-instances/*_medium.meta.json
 instances/*_large.graph
 instances/*_large.queries
 instances/*_large.answers

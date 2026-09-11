@@ -2,7 +2,7 @@
   "E": 100352,
   "Q": 10000,
   "V": 50176,
-  "argv": "--manifest tools/manifest/public.json --instance local2d_dev --out /tmp/dev",
+  "argv": "--manifest tools/manifest/public.json --instance local2d_dev --out instances",
   "component_sizes_top10": [
     50176
   ],
@@ -52,7 +52,7 @@
   "sha256": {
     "answers": "1bc082327e55920ea69e2c2c48d95d330f7c17febe45edb69397a7587931114c",
     "graph": "13e3b5e4ced022b1ab52984a50f330446c90abb74e99e2649e8e61421f2f60d0",
-    "queries": "f4eae944a8cb5a21bee7de71fbb5b8c7928fa0a10b9538c231959332417e95ba"
+    "queries": "69234374b2d880e9a9ef8f1a9defb269a6990afe2297a5e03c23773685b22800"
   },
   "verify": {
     "failures": 0,

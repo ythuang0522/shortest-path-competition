@@ -3,6 +3,18 @@
 CXX      ?= c++
 CXXFLAGS ?= -O3 -std=c++17 -Wall -Wextra
 
+# macOS workaround, same as the top-level Makefile: fall back to the SDK's
+# libc++ headers when the Command Line Tools copy is incomplete.
+UNAME_S := $(shell uname -s)
+ifeq ($(UNAME_S),Darwin)
+    ifeq ($(wildcard /Library/Developer/CommandLineTools/usr/include/c++/v1/cstdint),)
+        SDK_CXX_INC := $(shell xcrun --sdk macosx --show-sdk-path 2>/dev/null)/usr/include/c++/v1
+        ifneq ($(wildcard $(SDK_CXX_INC)/cstdint),)
+            CXXFLAGS += -isystem $(SDK_CXX_INC)
+        endif
+    endif
+endif
+
 # OpenMP is optional: without it refsolve still works, just serially.
 OMPFLAG := $(shell printf 'int main(){return 0;}' > /tmp/.omp$$$$.cpp; \
              if $(CXX) -fopenmp -o /dev/null /tmp/.omp$$$$.cpp 2>/dev/null; \

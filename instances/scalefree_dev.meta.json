@@ -2,7 +2,7 @@
   "E": 145587,
   "Q": 10000,
   "V": 50000,
-  "argv": "--manifest tools/manifest/public.json --instance scalefree_dev --out /tmp/dev",
+  "argv": "--manifest tools/manifest/public.json --instance scalefree_dev --out instances",
   "component_sizes_top10": [
     50000
   ],

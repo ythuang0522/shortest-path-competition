@@ -106,9 +106,9 @@ class Graph:
     def check(self, expect_components=1):
         """Assertions the v1 generator lacked.
 
-        The released v1 GRID instances claim in the README that the largest
-        connected component equals V; in fact grid_small has 3 components and
-        grid_medium has 15.  Nothing caught it because nothing checked.
+        The v1 GRID instances claimed in the README that the largest
+        connected component equals V; in fact two of them had 3 and 15
+        components.  Nothing caught it because nothing checked.
         """
         V, E = self.V, self.E
         if V <= 0 or E <= 0:
